@@ -100,9 +100,30 @@ class Configurator {
 		ids.forEach(id => this.controllers[id].setStrutColors())
 	}
 
-	export(dome){
+	export(){
+		var vID = 0
+		let Verts = dome._verts.map(function (v){
+			let vertObj = {
+				id: vID,
+				pos: [v.x,v.y,v.z],
+				neighbors: dome.getNeighbors(vID)
+			}
+			vID++
+			return vertObj
+		})
+		var sID = 0
+		let Struts = dome._edges.map(function (e){
+			let strutObj = {
+				id: e,
+				num_leds: dome._struts[sID].numLeds,
+			}
+			sID++
+			return strutObj
+		})
 		let config = {
 			Controllers: [],
+			Verts,
+			Struts,
 			led_list: []
 		}
 		for(let i = 0; i < this.controllers.length; i++){
@@ -110,12 +131,13 @@ class Configurator {
 			config.Controllers.push({
 				id: i,
 				num_leds: C.numLeds,
-				start_index: config.led_list.length
+				start_index: config.led_list.length,
+				verts: C._nodeList
 			})
 			console.log(C.ledPositions.length)
 			config.led_list.push(...C.ledPositions)
 		}
-		$("#output textarea").val(JSON.stringify(config))
+		$("#output textarea").val(JSON.stringify(config, null, 2))
 		$("#output").show()
 		return config
 	}
@@ -132,8 +154,14 @@ class Configurator {
 
 // {
 //     Controllers:[
-//         { id: <id>, num_leds: <num>, start_index: <index>, [ip: <ip>] }
+//         { id: <id>, num_leds: <num>, start_index: <index>, [ip: <ip>], verts: [<id>,<id>,...]}
 //         ...
 //     ],
+//     Verts:[
+//     	{ id: <id>, pos: [x,y,z], neighbors: [<id>,<id>,...]}
+//     ],
+//     Struts:[
+//     	{ id: <[vID,vID]>, num_leds: <n>}
+//     ]
 //     led_list: [[x,y,z],[x,y,z] ... list all 10.5k]
 // }
